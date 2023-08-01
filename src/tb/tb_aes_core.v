@@ -141,6 +141,7 @@ module tb_aes_core();
       $display("result_valid = 0x%01x, result = 0x%032x",
                dut.result_valid, dut.result);
       $display("");
+      $display("");
     end
   endtask // dump_dut_state
 
@@ -434,6 +435,7 @@ module tb_aes_core();
 
       ecb_mode_single_block_test(8'h17, nist_aes256_key1, AES_256_BIT_KEY,
                                  nist_ecb_256_enc_expected3, nist_plaintext3);
+
 
       ecb_mode_single_block_test(8'h19, nist_aes256_key2, AES_256_BIT_KEY,
                                  nist_ecb_256_enc_expected4, nist_plaintext4);
