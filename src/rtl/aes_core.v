@@ -116,25 +116,6 @@ module aes_core(
   //----------------------------------------------------------------
   // Instantiations.
   //----------------------------------------------------------------
-  aes_encipher_block enc_block(
-                               .clk(clk),
-                               .reset_n(reset_n),
-
-                               .next(enc_next),
-
-                               .keylen(keylen),
-                               .round(enc_round_nr),
-                               .round_key(round_key),
-
-                               .sboxw(enc_sboxw),
-                               .new_sboxw(new_sboxw),
-
-                               .block(block),
-                               .new_block(enc_new_block),
-                               .ready(enc_ready)
-                              );
-
-
   aes_decipher_block dec_block(
                                .clk(clk),
                                .reset_n(reset_n),

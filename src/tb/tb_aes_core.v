@@ -141,10 +141,6 @@ module tb_aes_core();
       $display("result_valid = 0x%01x, result = 0x%032x",
                dut.result_valid, dut.result);
       $display("");
-      $display("Encipher state::");
-      $display("enc_ctrl = 0x%01x, round_ctr = 0x%01x",
-               dut.enc_block.enc_ctrl_reg, dut.enc_block.round_ctr_reg);
-      $display("");
     end
   endtask // dump_dut_state
 
