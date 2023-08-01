@@ -43,7 +43,6 @@ module aes_core(
                 input wire            clk,
                 input wire            reset_n,
 
-                input wire            encdec,
                 input wire            init,
                 input wire            next,
                 output wire           ready,
@@ -51,7 +50,7 @@ module aes_core(
                 input wire [255 : 0]  key,
                 input wire            keylen,
 
-                input wire [127 : 0]  block,
+                input wire  [127 : 0]  block,
                 output wire [127 : 0] result,
                 output wire           result_valid
                );
@@ -234,28 +233,13 @@ module aes_core(
   // Controls which of the datapaths that get the next signal, have
   // access to the memory as well as the block processing result.
   //----------------------------------------------------------------
-  always @*
-    begin : encdec_mux
-      enc_next = 1'b0;
-      dec_next = 1'b0;
-
-      if (encdec)
-        begin
-          // Encipher operations
-          enc_next        = next;
-          muxed_round_nr  = enc_round_nr;
-          muxed_new_block = enc_new_block;
-          muxed_ready     = enc_ready;
-        end
-      else
-        begin
-          // Decipher operations
-          dec_next        = next;
-          muxed_round_nr  = dec_round_nr;
-          muxed_new_block = dec_new_block;
-          muxed_ready     = dec_ready;
-        end
-    end // encdec_mux
+  always @* begin
+      // Decipher operations
+      dec_next        = next;
+      muxed_round_nr  = dec_round_nr;
+      muxed_new_block = dec_new_block;
+      muxed_ready     = dec_ready;
+  end 
 
 
   //----------------------------------------------------------------
