@@ -48,7 +48,6 @@ module aes_core(
                 output wire           ready,
 
                 input wire [255 : 0]  key,
-                input wire            keylen,
 
                 input wire  [127 : 0]  block,
                 output wire [127 : 0] result,

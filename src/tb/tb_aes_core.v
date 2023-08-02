@@ -49,9 +49,6 @@ module tb_aes_core();
   parameter CLK_HALF_PERIOD = 1;
   parameter CLK_PERIOD = 2 * CLK_HALF_PERIOD;
 
-  parameter AES_128_BIT_KEY = 0;
-  parameter AES_256_BIT_KEY = 1;
-
   parameter AES_DECIPHER = 1'b0;
   parameter AES_ENCIPHER = 1'b1;
 
@@ -69,7 +66,6 @@ module tb_aes_core();
   reg            tb_next;
   wire           tb_ready;
   reg [255 : 0]  tb_key;
-  reg            tb_keylen;
   reg [127 : 0]  tb_block;
   wire [127 : 0] tb_result;
   wire           tb_result_valid;
@@ -87,7 +83,6 @@ module tb_aes_core();
                .ready(tb_ready),
 
                .key(tb_key),
-               .keylen(tb_keylen),
 
                .block(tb_block),
                .result(tb_result)
@@ -134,7 +129,7 @@ module tb_aes_core();
       $display("------------");
       $display("Inputs and outputs:");
       $display("init   = 0x%01x, next = 0x%01x", dut.init, dut.next);
-      $display("keylen = 0x%01x, key  = 0x%032x ", dut.keylen, dut.key);
+      $display("key  = 0x%032x ",dut.key);
       $display("block  = 0x%032x", dut.block);
       $display("");
       $display("ready        = 0x%01x", dut.ready);
@@ -206,7 +201,6 @@ module tb_aes_core();
       tb_init    = 0;
       tb_next    = 0;
       tb_key     = {8{32'h00000000}};
-      tb_keylen  = 0;
 
       tb_block  = {4{32'h00000000}};
     end
@@ -282,7 +276,6 @@ module tb_aes_core();
   //----------------------------------------------------------------
   task ecb_mode_single_block_test(input [7 : 0]   tc_number,
                                   input [255 : 0] key,
-                                  input           key_length,
                                   input [127 : 0] block,
                                   input [127 : 0] expected);
    begin
@@ -291,7 +284,6 @@ module tb_aes_core();
 
      // Init the cipher with the given key and length.
      tb_key = key;
-     tb_keylen = key_length;
      tb_init = 1;
      #(2 * CLK_PERIOD);
      tb_init = 0;
@@ -404,20 +396,20 @@ module tb_aes_core();
       $display("ECB 256 bit key tests");
       $display("---------------------");
 
-      ecb_mode_single_block_test(8'h14, nist_aes256_key1, AES_256_BIT_KEY,
+      ecb_mode_single_block_test(8'h14, nist_aes256_key1, 
                                  nist_ecb_256_enc_expected0, nist_plaintext0);
 
-      ecb_mode_single_block_test(8'h15, nist_aes256_key1, AES_256_BIT_KEY,
+      ecb_mode_single_block_test(8'h15, nist_aes256_key1, 
                                  nist_ecb_256_enc_expected1, nist_plaintext1);
 
-      ecb_mode_single_block_test(8'h16, nist_aes256_key1, AES_256_BIT_KEY,
+      ecb_mode_single_block_test(8'h16, nist_aes256_key1, 
                                  nist_ecb_256_enc_expected2, nist_plaintext2);
 
-      ecb_mode_single_block_test(8'h17, nist_aes256_key1, AES_256_BIT_KEY,
+      ecb_mode_single_block_test(8'h17, nist_aes256_key1, 
                                  nist_ecb_256_enc_expected3, nist_plaintext3);
 
 
-      ecb_mode_single_block_test(8'h19, nist_aes256_key2, AES_256_BIT_KEY,
+      ecb_mode_single_block_test(8'h19, nist_aes256_key2, 
                                  nist_ecb_256_enc_expected4, nist_plaintext4);
 
       display_test_result();
