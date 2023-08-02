@@ -133,7 +133,7 @@ module tb_aes_core();
       $display("State of DUT");
       $display("------------");
       $display("Inputs and outputs:");
-      $display("init = 0x%01x, next = 0x%01x", dut.init, dut.next);
+      $display("init   = 0x%01x, next = 0x%01x", dut.init, dut.next);
       $display("keylen = 0x%01x, key  = 0x%032x ", dut.keylen, dut.key);
       $display("block  = 0x%032x", dut.block);
       $display("");
