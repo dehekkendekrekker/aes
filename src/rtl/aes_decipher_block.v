@@ -46,7 +46,6 @@ module aes_decipher_block(
 
                           input wire            next,
 
-                          input wire            keylen,
                           output wire [3 : 0]   round,
                           input wire [127 : 0]  round_key,
 
@@ -425,14 +424,7 @@ module aes_decipher_block(
 
       if (round_ctr_set)
         begin
-          if (keylen == AES_256_BIT_KEY)
-            begin
-              round_ctr_new = AES256_ROUNDS;
-            end
-          else
-            begin
-              round_ctr_new = AES128_ROUNDS;
-            end
+          round_ctr_new = AES256_ROUNDS;
           round_ctr_we  = 1'b1;
         end
       else if (round_ctr_dec)

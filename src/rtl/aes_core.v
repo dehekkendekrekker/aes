@@ -118,7 +118,6 @@ module aes_core(
 
                                .next(dec_next),
 
-                               .keylen(keylen),
                                .round(dec_round_nr),
                                .round_key(round_key),
 
@@ -133,7 +132,6 @@ module aes_core(
                      .reset_n(reset_n),
 
                      .key(key),
-                     .keylen(keylen),
                      .init(init),
 
                      .round(muxed_round_nr),

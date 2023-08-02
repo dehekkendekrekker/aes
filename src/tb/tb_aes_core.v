@@ -400,26 +400,6 @@ module tb_aes_core();
       reset_dut();
       dump_dut_state();
 
-
-      $display("ECB 128 bit key tests");
-      $display("---------------------");
-
-      ecb_mode_single_block_test(8'h05, nist_aes128_key1, AES_128_BIT_KEY,
-                                 nist_ecb_128_enc_expected0, nist_plaintext0);
-
-      ecb_mode_single_block_test(8'h06, nist_aes128_key1, AES_128_BIT_KEY,
-                                 nist_ecb_128_enc_expected1, nist_plaintext1);
-
-      ecb_mode_single_block_test(8'h07, nist_aes128_key1, AES_128_BIT_KEY,
-                                 nist_ecb_128_enc_expected2, nist_plaintext2);
-
-      ecb_mode_single_block_test(8'h08, nist_aes128_key1, AES_128_BIT_KEY,
-                                 nist_ecb_128_enc_expected3, nist_plaintext3);
-
-      ecb_mode_single_block_test(8'h0a, nist_aes128_key2, AES_128_BIT_KEY,
-                                 nist_ecb_128_enc_expected4, nist_plaintext4);
-
-
       $display("");
       $display("ECB 256 bit key tests");
       $display("---------------------");

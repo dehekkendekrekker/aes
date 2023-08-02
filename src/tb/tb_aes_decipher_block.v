@@ -93,7 +93,6 @@ module tb_aes_decipher_block();
 
                          .next(tb_next),
 
-                         .keylen(tb_keylen),
                          .round(tb_round),
                          .round_key(tb_round_key),
 
@@ -142,8 +141,8 @@ module tb_aes_decipher_block();
       $display("State of DUT");
       $display("------------");
       $display("Interfaces");
-      $display("ready = 0x%01x, next = 0x%01x, keylen = 0x%01x",
-               dut.ready, dut.next, dut.keylen);
+      $display("ready = 0x%01x, next = 0x%01x",
+               dut.ready, dut.next);
       $display("block     = 0x%032x", dut.block);
       $display("new_block = 0x%032x", dut.new_block);
       $display("");
@@ -325,11 +324,6 @@ module tb_aes_decipher_block();
       nist_plaintext2 = 128'h30c81c46a35ce411e5fbc1191a0a52ef;
       nist_plaintext3 = 128'hf69f2445df4f9b17ad2b417be66c3710;
 
-      nist_ecb_128_dec_ciphertext0 = 128'h3ad77bb40d7a3660a89ecaf32466ef97;
-      nist_ecb_128_dec_ciphertext1 = 128'hf5d3d58503b9699de785895a96fdbaaf;
-      nist_ecb_128_dec_ciphertext2 = 128'h43b1cd7f598ece23881b00e3ed030688;
-      nist_ecb_128_dec_ciphertext3 = 128'h7b0c785e27e8ad3f8223207104725dd4;
-
       nist_ecb_256_dec_ciphertext0 = 128'hf3eed1bdb5d2a03c064b5a7e3db181f8;
       nist_ecb_256_dec_ciphertext1 = 128'h591ccb10d410ed26dc5ba74a31362870;
       nist_ecb_256_dec_ciphertext2 = 128'hb6ed21b99ca6f4f9f153e7b1beafed1d;
@@ -344,30 +338,6 @@ module tb_aes_decipher_block();
       dump_dut_state();
       reset_dut();
       dump_dut_state();
-
-
-      // NIST 128 bit ECB tests.
-      key_mem[00] = 128'h2b7e151628aed2a6abf7158809cf4f3c;
-      key_mem[01] = 128'ha0fafe1788542cb123a339392a6c7605;
-      key_mem[02] = 128'hf2c295f27a96b9435935807a7359f67f;
-      key_mem[03] = 128'h3d80477d4716fe3e1e237e446d7a883b;
-      key_mem[04] = 128'hef44a541a8525b7fb671253bdb0bad00;
-      key_mem[05] = 128'hd4d1c6f87c839d87caf2b8bc11f915bc;
-      key_mem[06] = 128'h6d88a37a110b3efddbf98641ca0093fd;
-      key_mem[07] = 128'h4e54f70e5f5fc9f384a64fb24ea6dc4f;
-      key_mem[08] = 128'head27321b58dbad2312bf5607f8d292f;
-      key_mem[09] = 128'hac7766f319fadc2128d12941575c006e;
-      key_mem[10] = 128'hd014f9a8c9ee2589e13f0cc8b6630ca6;
-      key_mem[11] = 128'h00000000000000000000000000000000;
-      key_mem[12] = 128'h00000000000000000000000000000000;
-      key_mem[13] = 128'h00000000000000000000000000000000;
-      key_mem[14] = 128'h00000000000000000000000000000000;
-
-      test_ecb_dec(AES_128_BIT_KEY, nist_ecb_128_dec_ciphertext0, nist_plaintext0);
-      test_ecb_dec(AES_128_BIT_KEY, nist_ecb_128_dec_ciphertext1, nist_plaintext1);
-      test_ecb_dec(AES_128_BIT_KEY, nist_ecb_128_dec_ciphertext2, nist_plaintext2);
-      test_ecb_dec(AES_128_BIT_KEY, nist_ecb_128_dec_ciphertext3, nist_plaintext3);
-
 
       // NIST 256 bit ECB tests.
       key_mem[00] = 128'h603deb1015ca71be2b73aef0857d7781;
