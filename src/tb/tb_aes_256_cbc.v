@@ -125,7 +125,7 @@ module tb_aes_256_cbc();
       $display("State of DUT");
       $display("------------");
       $display("Inputs and outputs:");
-      $display("init   = 0x%01", dut.init);
+      $display("init = 0x%01x", dut.init);
       $display("key  = 0x%032x ",dut.key);
       $display("block  = 0x%032x", dut.block);
       $display("");
@@ -207,6 +207,7 @@ module tb_aes_256_cbc();
   // point set the flag.
   //----------------------------------------------------------------
   task wait_ready;
+    
     begin
       while (!tb_ready)
         begin
@@ -242,7 +243,7 @@ module tb_aes_256_cbc();
   //----------------------------------------------------------------
   // cbc_mode_single_block_test()
   //
-  // Perform ECB mode encryption or decryption single block test.
+  // Perform CBC mode encryption or decryption single block test.
   //----------------------------------------------------------------
   task cbc_mode_single_block_test(input [7 : 0]   tc_number,
                                   input [255 : 0] key,
@@ -250,13 +251,15 @@ module tb_aes_256_cbc();
                                   input [127 : 0] block,
                                   input [127 : 0] expected);
    begin
-     $display("*** TC %0d ECB mode test started.", tc_number);
+     $display("*** TC %0d CBC mode test started.", tc_number);
      tc_ctr = tc_ctr + 1;
 
      // Init the cipher with the given key and length.
+     tb_block = block;
      tb_key  = key;
      tb_iv   = iv;
      tb_init = 1;
+
      #(2 * CLK_PERIOD);
      tb_init = 0;
      wait_ready();
@@ -315,23 +318,23 @@ module tb_aes_256_cbc();
       reg [127 : 0] cbc_256_dec_expected2;
       reg [127 : 0] cbc_256_dec_expected3;
 
-      aes256_key0 = 256'hf884449e1c3c65afa80ce7c8a76ac565dd106c2d037371d08b91bf8978b1c296;
+      aes256_key0 = 256'h3325202f574a4e42288a738b424b087134af475604ac20eea0b14329cb1a4e57;
       aes256_key1 = 256'h8ab67eb42341c42c936ebc2f53f5fbeda5bff4f383f39cce27d0d00733fcb0cb;
       aes256_key2 = 256'hd14d179a1c6bb7118a1fe5932d1c2a49e018c50076d793c4c86ece98721fe978;
       aes256_key3 = 256'h9328e385b65d1866c65a5ba8677ab37e7e44ced5e0fd0bce37fa1b34d92a4c04;
 
 
-      aes256_iv0 = 128'h43ac36b33d79a74e77e29f3a384d6a19;
+      aes256_iv0 = 128'h492365f90918f6152af6508adcce5e41;
       aes256_iv1 = 128'h492de5ecf8e692aa984face502c5bd3d;
       aes256_iv2 = 128'h55f761483ec4c9f094b6485104827501;
       aes256_iv3 = 128'h46fcec5ba9097361c508cebdc7231f1f;
 
-      ciphertext0 = 128'h3fa4153ca0f82e4c07ae8b9f1b4d67fa;
+      ciphertext0 = 128'h0f5f230ee5a3001dea009813679c8c4a;
       ciphertext1 = 128'h40d196401c77f54af23ec4619cd8b05b;
       ciphertext2 = 128'hac7f8ab6f2b61992b5c24fbdd3b9f189;
       ciphertext3 = 128'h84f592f1df26c1414a79091b14682a60;
 
-      cbc_256_dec_expected0 = 128'hcc24b927952881bc01a96ecd422bccf1;
+      cbc_256_dec_expected0 = 128'h530099194418c8557f29805a96a69859;
       cbc_256_dec_expected1 = 128'ha1fcf33103baae6882047d6b5bacc62d;
       cbc_256_dec_expected2 = 128'h3cca05764c5ead5a8934b98385b8ee41;
       cbc_256_dec_expected3 = 128'h56442395860ea145791e0670ad3b9b91;

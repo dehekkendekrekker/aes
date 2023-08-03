@@ -56,18 +56,193 @@ module aes_256_cbc (
 //----------------------------------------------------------------
 // Internal constant and parameter definitions.
 //----------------------------------------------------------------
-localparam CTRL_IDLE  = 2'h0;
-localparam CTRL_INIT  = 2'h1;
-localparam CTRL_DECRYPTING  = 2'h2;
-localparam CTRL_DONE  = 2'h3;
+localparam CTRL_IDLE  = 3'h0;
+localparam CTRL_INIT  = 3'h1;
+localparam CTRL_EXPANDING = 3'h2;
+localparam CTRL_DECRYPTING  = 3'h3;
+localparam CTRL_DONE  = 3'h4;
+
+//----------------------------------------------------------------
+// Registers including update variables and write enable.
+//----------------------------------------------------------------
+reg [2 : 0] module_ctrl_reg;
+reg [2 : 0] module_ctrl_new;
+reg         module_ctrl_we;
+
+reg         result_valid_reg;
+reg         result_valid_new;
+reg         result_valid_we;
+
+reg [127 : 0] result_reg;
+reg [127 : 0] result_new;
+reg           result_we;
+
+reg         ready_reg;
+reg         ready_new;
+reg         ready_we;
+
+reg         core_init_reg;
+reg         core_init_new;
+reg         core_init_we;
+
+reg         core_next_reg;
+reg         core_next_new;
+reg         core_next_we;
 
 
+//----------------------------------------------------------------
+// Wires.
+//----------------------------------------------------------------
+wire            core_init;
+wire            core_next;
+wire            core_ready;
+wire [127 : 0]  core_result;
+wire            core_result_valid;
+
+
+//----------------------------------------------------------------
+// Concurrent connectivity for ports etc.
+//----------------------------------------------------------------
+assign ready        = ready_reg;
+assign result       = result_reg;
+assign result_valid = result_valid_reg;
+assign core_init = core_init_reg;
+assign core_next = core_next_reg;
+
+
+
+//----------------------------------------------------------------
+// Instantiations.
+//----------------------------------------------------------------
+aes_core aes_core_inst(
+    .clk(clk),
+    .reset_n(reset_n),
+    .init(core_init),
+    .next(core_next),
+    .ready(core_ready),
+    .key(key),
+    .block(block),
+    .result(core_result),
+    .result_valid(core_result_valid)
+);
+
+
+//----------------------------------------------------------------
+// reg_update
+//
+// Update functionality for all registers in the core.
+// All registers are positive edge triggered with asynchronous
+// active low reset. All registers have write enable.
+//----------------------------------------------------------------
+always @ (posedge clk or negedge reset_n)
+begin: reg_update
+    if (!reset_n)
+    begin
+        result_valid_reg  <= 1'b0;
+        ready_reg         <= 1'b1;
+        core_init_reg     <= 1'b0;
+        core_next_reg     <= 1'b0;
+        module_ctrl_reg   <= CTRL_IDLE;
+    end
+    else
+    begin
+        if (result_valid_we)
+            result_valid_reg <= result_valid_new;
+
+        if (ready_we)
+            ready_reg <= ready_new;
+
+        if (module_ctrl_we)
+            module_ctrl_reg <= module_ctrl_new;
+
+        if (core_init_we)
+            core_init_reg <= core_init_new;
+
+        if (core_next_we)
+            core_next_reg <= core_next_new;
+
+        if (result_we)
+            result_reg <= result_new;
+    end
+end // reg_update
 
 //----------------------------------------------------------------
 // aes_256_cbc_ctrl
 //
-// Control FSM for aes mopdule. 
+// Control FSM for aes module. 
 //----------------------------------------------------------------
+always @* begin : main_fsm
+    result_valid_new =  1'b0;
+    result_valid_we  =  1'b0;
 
+    result_new = 1'b0;
+    result_we  = 1'b0;
+
+    ready_new = 1'b0;
+    ready_we = 1'b0;
+
+    core_init_new = 1'b0;
+    core_init_we = 1'b0;
+
+    core_next_new = 1'b0;
+    core_next_we = 1'b0;
+    
+
+    case (module_ctrl_reg)
+    CTRL_IDLE: begin
+        if (init) begin
+            ready_new         = 1'b0;
+            ready_we          = 1'b1;
+            result_valid_new  = 1'b0;
+            result_valid_we   = 1'b1;
+            core_init_new     = 1'b1;
+            core_init_we      = 1'b1;
+            module_ctrl_new   = CTRL_INIT;
+            module_ctrl_we    = 1'b1;
+        end
+    end
+
+    CTRL_INIT: begin
+        core_init_new     = 1'b0;
+        core_init_we      = 1'b1;
+        module_ctrl_new   = CTRL_EXPANDING;
+        module_ctrl_we    = 1'b1;
+    end
+
+    CTRL_EXPANDING: begin
+        core_init_new = 1'b0;
+        core_init_we  = 1'b1;
+        if (core_ready) begin
+            core_next_new     = 1'b1;
+            core_next_we      = 1'b1;
+            module_ctrl_new   = CTRL_DECRYPTING;
+            module_ctrl_we    = 1'b1;
+        end
+    end
+
+    CTRL_DECRYPTING: begin
+        core_next_new = 1'b0;
+        core_next_we  = 1'b1;
+        if(core_result_valid) begin
+            core_next_new = 0;
+            core_next_we = 1;
+            module_ctrl_new   = CTRL_DONE;
+            module_ctrl_we    = 1'b1;
+        end
+    end
+
+    CTRL_DONE: begin
+        result_new = core_result ^ iv;
+        result_we   = 1'b1;
+        module_ctrl_new   = CTRL_IDLE;
+        module_ctrl_we    = 1'b1;
+
+        ready_new = 1'b1;
+        ready_we  = 1'b1;
+        result_valid_new = 1'b1;
+        result_valid_we  = 1'b1;
+    end
+    endcase
+end
 
 endmodule
