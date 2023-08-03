@@ -81,7 +81,8 @@ module tb_aes_256_cbc();
                .block(tb_block),
                
                .ready(tb_ready),
-               .result(tb_result)
+               .result(tb_result),
+               .result_valid(tb_result_valid)
               );
 
 
@@ -124,7 +125,7 @@ module tb_aes_256_cbc();
       $display("State of DUT");
       $display("------------");
       $display("Inputs and outputs:");
-      $display("init   = 0x%01x, next = 0x%01x", dut.init, dut.next);
+      $display("init   = 0x%01", dut.init);
       $display("key  = 0x%032x ",dut.key);
       $display("block  = 0x%032x", dut.block);
       $display("");
@@ -137,32 +138,6 @@ module tb_aes_256_cbc();
   endtask // dump_dut_state
 
 
-  //----------------------------------------------------------------
-  // dump_keys()
-  //
-  // Dump the keys in the key memory of the dut.
-  //----------------------------------------------------------------
-  task dump_keys;
-    begin
-      $display("State of key memory in DUT:");
-      $display("key[00] = 0x%016x", dut.keymem.key_mem[00]);
-      $display("key[01] = 0x%016x", dut.keymem.key_mem[01]);
-      $display("key[02] = 0x%016x", dut.keymem.key_mem[02]);
-      $display("key[03] = 0x%016x", dut.keymem.key_mem[03]);
-      $display("key[04] = 0x%016x", dut.keymem.key_mem[04]);
-      $display("key[05] = 0x%016x", dut.keymem.key_mem[05]);
-      $display("key[06] = 0x%016x", dut.keymem.key_mem[06]);
-      $display("key[07] = 0x%016x", dut.keymem.key_mem[07]);
-      $display("key[08] = 0x%016x", dut.keymem.key_mem[08]);
-      $display("key[09] = 0x%016x", dut.keymem.key_mem[09]);
-      $display("key[10] = 0x%016x", dut.keymem.key_mem[10]);
-      $display("key[11] = 0x%016x", dut.keymem.key_mem[11]);
-      $display("key[12] = 0x%016x", dut.keymem.key_mem[12]);
-      $display("key[13] = 0x%016x", dut.keymem.key_mem[13]);
-      $display("key[14] = 0x%016x", dut.keymem.key_mem[14]);
-      $display("");
-    end
-  endtask // dump_keys
 
 
   //----------------------------------------------------------------
@@ -195,10 +170,9 @@ module tb_aes_256_cbc();
       tb_clk     = 0;
       tb_reset_n = 1;
       tb_init    = 0;
-      tb_next    = 0;
       tb_key     = {8{32'h00000000}};
-
-      tb_block  = {4{32'h00000000}};
+      tb_iv      = {4{32'h00000000}};
+      tb_block   = {4{32'h00000000}};
     end
   endtask // init_sim
 
@@ -287,19 +261,6 @@ module tb_aes_256_cbc();
      tb_init = 0;
      wait_ready();
 
-     $display("Key expansion done");
-     $display("");
-
-     dump_keys();
-
-
-     // Perform encipher och decipher operation on the block.
-     tb_block = block;
-     tb_next = 1;
-     #(2 * CLK_PERIOD);
-     tb_next = 0;
-     wait_ready();
-
      if (tb_result == expected)
        begin
          $display("*** TC %0d successful.", tc_number);
@@ -334,10 +295,15 @@ module tb_aes_256_cbc();
   //----------------------------------------------------------------
   initial
     begin : aes_256_cbc_test
+      reg [255 : 0] aes256_key0;
       reg [255 : 0] aes256_key1;
       reg [255 : 0] aes256_key2;
       reg [255 : 0] aes256_key3;
-      reg [255 : 0] aes256_key4;
+
+      reg [127 : 0] aes256_iv0;
+      reg [127 : 0] aes256_iv1;
+      reg [127 : 0] aes256_iv2;
+      reg [127 : 0] aes256_iv3;
 
       reg [127 : 0] ciphertext0;
       reg [127 : 0] ciphertext1;
@@ -362,7 +328,7 @@ module tb_aes_256_cbc();
 
       ciphertext0 = 128'h3fa4153ca0f82e4c07ae8b9f1b4d67fa;
       ciphertext1 = 128'h40d196401c77f54af23ec4619cd8b05b;
-      ciphertext2 = 128'hac7f8ab6f2b61992b5c24fbdd3b9f189
+      ciphertext2 = 128'hac7f8ab6f2b61992b5c24fbdd3b9f189;
       ciphertext3 = 128'h84f592f1df26c1414a79091b14682a60;
 
       cbc_256_dec_expected0 = 128'hcc24b927952881bc01a96ecd422bccf1;
@@ -384,13 +350,13 @@ module tb_aes_256_cbc();
       $display("CBC 256 bit key tests");
       $display("---------------------");
 
-      cbc_mode_single_block_test(8'h1, aes256_key0, aes256_iv0, ciphertext0, ecb_256_enc_expected0);
+      cbc_mode_single_block_test(8'h1, aes256_key0, aes256_iv0, ciphertext0, cbc_256_dec_expected0);
 
-      cbc_mode_single_block_test(8'h2, aes256_key1, aes256_iv1, ciphertext1, ecb_256_enc_expected1);
+      cbc_mode_single_block_test(8'h2, aes256_key1, aes256_iv1, ciphertext1, cbc_256_dec_expected1);
 
-      cbc_mode_single_block_test(8'h3, aes256_key2, aes256_iv2, ciphertext2, ecb_256_enc_expected2);
+      cbc_mode_single_block_test(8'h3, aes256_key2, aes256_iv2, ciphertext2, cbc_256_dec_expected2);
 
-      cbc_mode_single_block_test(8'h4, aes256_key3, aes256_iv3, ciphertext3, ecb_256_enc_expected3);
+      cbc_mode_single_block_test(8'h4, aes256_key3, aes256_iv3, ciphertext3, cbc_256_dec_expected3);
 
       display_test_result();
       $display("");
