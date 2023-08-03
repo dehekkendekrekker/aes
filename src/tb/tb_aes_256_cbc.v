@@ -261,7 +261,7 @@ module tb_aes_256_cbc();
      tb_init = 1;
 
      #(2 * CLK_PERIOD);
-     tb_init = 0;
+     //tb_init = 0;
      wait_ready();
 
      if (tb_result == expected)

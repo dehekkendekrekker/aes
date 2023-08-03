@@ -142,6 +142,7 @@ begin: reg_update
         ready_reg         <= 1'b1;
         core_init_reg     <= 1'b0;
         core_next_reg     <= 1'b0;
+        result_reg        <= 128'b0;
         module_ctrl_reg   <= CTRL_IDLE;
     end
     else
@@ -175,7 +176,7 @@ always @* begin : main_fsm
     result_valid_new =  1'b0;
     result_valid_we  =  1'b0;
 
-    result_new = 1'b0;
+    result_new = 128'b0;
     result_we  = 1'b0;
 
     ready_new = 1'b0;
@@ -186,6 +187,9 @@ always @* begin : main_fsm
 
     core_next_new = 1'b0;
     core_next_we = 1'b0;
+
+    module_ctrl_new = CTRL_IDLE;
+    module_ctrl_we  = 1'b0;
     
 
     case (module_ctrl_reg)

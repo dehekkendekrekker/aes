@@ -11,4 +11,4 @@ cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
 ct = b"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
 # ffffffffffffffffffffffffffffffff
 plaintext = cipher.decrypt(ct)
-print("PT:  %s" % plaintext.hex()) # ee4002253570ea6e16fcdef09ea66e23
+print("PT:  %s" % plaintext.hex()) # c2a5696851d90567619d102900a90905
