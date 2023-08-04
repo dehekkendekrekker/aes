@@ -39,8 +39,6 @@
 module aes_256_cbc (
         input wire clk,
         input wire reset_n,
-        input wire ce,
-        input wire oe,
 
         input wire            init,
         output wire           ready,
@@ -122,7 +120,7 @@ wire [255 : 0 ] core_key;
 // Concurrent connectivity for ports etc.
 //----------------------------------------------------------------
 assign ready        = ready_reg;
-assign result       = (oe & ce) ? result_reg : {16{8'b0}};
+assign result       = result_reg;
 assign result_valid = result_valid_reg;
 assign core_init = core_init_reg;
 assign core_next = core_next_reg;
@@ -237,7 +235,7 @@ always @* begin : main_fsm
 
     case (module_ctrl_reg)
     CTRL_IDLE: begin
-        if (init && ce) begin
+        if (init) begin
             ready_new         = 1'b0;
             ready_we          = 1'b1;
             result_valid_new  = 1'b0;
