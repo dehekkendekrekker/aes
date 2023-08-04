@@ -40,6 +40,7 @@ module aes_256_cbc (
         input wire clk,
         input wire reset_n,
         input wire ce,
+        input wire oe,
 
         input wire            init,
         output wire           ready,
@@ -121,7 +122,7 @@ wire [511 : 0 ] core_key;
 // Concurrent connectivity for ports etc.
 //----------------------------------------------------------------
 assign ready        = ready_reg;
-assign result       = result_reg;
+assign result       = (oe & ce) ? result_reg : {16{8'b0}};
 assign result_valid = result_valid_reg;
 assign core_init = core_init_reg;
 assign core_next = core_next_reg;

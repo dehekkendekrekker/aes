@@ -59,6 +59,7 @@ reg [31 : 0] tc_ctr;
 reg            tb_clk;
 reg            tb_reset_n;
 reg            tb_ce;
+reg            tb_oe;
 reg            tb_init;
 wire           tb_ready;
 reg [255 : 0]  tb_key;
@@ -75,6 +76,7 @@ aes_256_cbc dut(
               .clk(tb_clk),
               .reset_n(tb_reset_n),
               .ce(tb_ce),
+              .oe(tb_oe),
               .init(tb_init),
 
               .key(tb_key),
@@ -171,6 +173,7 @@ task init_sim;
     tb_clk     = 0;
     tb_reset_n = 1;
     tb_ce      = 0;
+    tb_oe      = 0;
     tb_init    = 0;
     tb_key     = {8{32'h00000000}};
     tb_iv      = {4{32'h00000000}};
@@ -300,7 +303,7 @@ begin
   tb_init = 1;
 
   #(2 * CLK_PERIOD);
-  //tb_init = 0;
+  tb_init = 0;
   wait_ready();
 
   if (tb_result == expected)
@@ -339,7 +342,7 @@ begin
 
 
     tb_ce     = 1;
-    // tb_oe     = 0;
+    tb_oe     = 0;
     tb_init   = 1;
     tb_block  = block;
     tb_iv     = iv;
@@ -355,7 +358,7 @@ begin
 
     // Wait for the job to finish
     wait_ready();
-    // tb_oe = 1;
+    tb_oe = 1;
     #(CLK_PERIOD);
 
 
@@ -376,6 +379,53 @@ begin
 
 end
 endtask
+
+//----------------------------------------------------------------
+// aes_oe_test()
+//
+// This test case tests the correct operation the oe (output enable) pin
+//----------------------------------------------------------------
+task aes_oe_test(input [7 : 0]    tc_number,
+                input [511 : 0] key,
+                input [127 : 0] iv,
+                input [127 : 0] block,
+                input ce,
+                input oe,
+                input [127 : 0]  expected);
+
+begin
+    $display("*** TC %0d OE testcase started.", tc_number);
+    tc_ctr = tc_ctr + 1;
+
+    tb_key = key;
+    tb_iv = iv;
+    tb_block = block;
+    tb_init = 1;
+    tb_ce   = 1;
+    tb_oe   = 0;
+    
+    #(CLK_PERIOD);
+    tb_init = 0;
+
+    wait_ready();
+    tb_oe = oe;
+    tb_ce = ce;
+    #(CLK_PERIOD);
+
+    if (tb_result === expected) begin
+        $display("*** TC %0d successful.", tc_number);
+        $display("");
+    end else begin
+        $display("*** ERROR: TC %0d NOT successful.", tc_number);
+        $display("Expected: 0x%032x", expected);
+        $display("Got:      0x%032x", tb_result);
+        $display("");
+
+        error_ctr = error_ctr + 1;
+    end
+end
+endtask
+
 
 //----------------------------------------------------------------
 // aes_256_cbc_test
@@ -470,6 +520,15 @@ initial
     cbc_mode_single_block_test(8'h3, aes256_key2, aes256_iv2, ciphertext2, cbc_256_dec_expected2);
 
     cbc_mode_single_block_test(8'h4, aes256_key3, aes256_iv3, ciphertext3, cbc_256_dec_expected3);
+
+    $display("");
+    $display("Output enable (OE) tests");
+    $display("---------------------");
+
+    aes_oe_test(8'd5,  aes256_key0, aes256_iv0, ciphertext0, 1,1,cbc_256_dec_expected0);
+    aes_oe_test(8'd5,  aes256_key0, aes256_iv0, ciphertext0, 0,1,{16{8'h00}});
+    aes_oe_test(8'd5,  aes256_key0, aes256_iv0, ciphertext0, 1,0,{16{8'h00}});
+    aes_oe_test(8'd5,  aes256_key0, aes256_iv0, ciphertext0, 0,0,{16{8'h00}});
 
     display_test_result();
     $display("");
