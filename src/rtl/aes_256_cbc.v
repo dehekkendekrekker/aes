@@ -39,6 +39,7 @@
 module aes_256_cbc (
         input wire clk,
         input wire reset_n,
+        input wire ce,
 
         input wire            init,
         output wire           ready,
@@ -194,7 +195,7 @@ always @* begin : main_fsm
 
     case (module_ctrl_reg)
     CTRL_IDLE: begin
-        if (init) begin
+        if (init && ce) begin
             ready_new         = 1'b0;
             ready_we          = 1'b1;
             result_valid_new  = 1'b0;
