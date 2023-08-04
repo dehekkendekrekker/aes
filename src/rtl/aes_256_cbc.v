@@ -75,8 +75,8 @@ reg         result_valid_reg;
 reg         result_valid_new;
 reg         result_valid_we;
 
-reg [511 : 0]   key_reg;
-reg [511 : 0]   key_new;
+reg [255 : 0]   key_reg;
+reg [255 : 0]   key_new;
 reg             key_we;
 
 reg [127 : 0]   iv_reg;
@@ -115,7 +115,7 @@ wire            core_result_valid;
 
 wire [127 : 0 ] core_iv;
 wire [127 : 0 ] core_block;
-wire [511 : 0 ] core_key;
+wire [255 : 0 ] core_key;
 
 
 //----------------------------------------------------------------
@@ -165,6 +165,9 @@ begin: reg_update
         core_init_reg     <= 1'b0;
         core_next_reg     <= 1'b0;
         result_reg        <= 128'b0;
+        key_reg           <= 256'b0;
+        iv_reg            <= 128'b0;
+        block_reg         <= 128'b0;
         module_ctrl_reg   <= CTRL_IDLE;
     end
     else

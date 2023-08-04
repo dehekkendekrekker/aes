@@ -331,7 +331,7 @@ endtask // cbc_mode_single_block_test
 //----------------------------------------------------------------
 task aes_bus_clearance(
     input [7 : 0]       tc_number,
-    input [511 : 0]     key,
+    input [255 : 0]     key,
     input [127 : 0]     iv,
     input [127 : 0]     block,
     input [127 : 0]     expected
@@ -386,7 +386,7 @@ endtask
 // This test case tests the correct operation the oe (output enable) pin
 //----------------------------------------------------------------
 task aes_oe_test(input [7 : 0]    tc_number,
-                input [511 : 0] key,
+                input [255 : 0] key,
                 input [127 : 0] iv,
                 input [127 : 0] block,
                 input ce,
@@ -426,6 +426,36 @@ begin
 end
 endtask
 
+//----------------------------------------------------------------
+// aes_reset_test()
+//
+// This test case tests the correct operation the oe (output enable) pin
+//----------------------------------------------------------------
+task aes_reset_test(input [7 : 0]    tc_number);
+begin
+    $display("*** TC %0d reset testcase started.", tc_number);
+    tc_ctr = tc_ctr + 1;
+
+    tb_reset_n = 0;
+    #(CLK_PERIOD);
+
+    if (tb_result === {16{8'b0}} && tb_ready === 1'b1 && tb_result_valid === 1'b0) begin
+        $display("*** TC %0d successful.", tc_number);
+        $display("");
+    end else begin
+      $display("*** ERROR: TC %0d NOT successful.", tc_number);
+        $display("Expected result:          0x%032x, got: 0x%032x", {16{8'b0}}, tb_result);
+        $display("Expected ready:           0x%01x, got: 0x%01x", 1'b1, tb_ready);
+        $display("Expected tb_result_valid: 0x%01x, got: 0x%01x", 1'b0, tb_result_valid);
+        $display("");
+
+        error_ctr = error_ctr + 1;
+    end
+
+
+
+end
+endtask
 
 //----------------------------------------------------------------
 // aes_256_cbc_test
@@ -529,6 +559,11 @@ initial
     aes_oe_test(8'd5,  aes256_key0, aes256_iv0, ciphertext0, 0,1,{16{8'h00}});
     aes_oe_test(8'd5,  aes256_key0, aes256_iv0, ciphertext0, 1,0,{16{8'h00}});
     aes_oe_test(8'd5,  aes256_key0, aes256_iv0, ciphertext0, 0,0,{16{8'h00}});
+
+    $display("");
+    $display("Reset test");
+    $display("---------------------");
+    aes_reset_test(8'd6);
 
     display_test_result();
     $display("");
