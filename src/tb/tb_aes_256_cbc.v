@@ -223,6 +223,8 @@ task wait_ready;
 endtask // wait_ready
 
 
+
+
 //----------------------------------------------------------------
 // wait_valid()
 //
@@ -318,6 +320,62 @@ begin
 end
 endtask // cbc_mode_single_block_test
 
+//----------------------------------------------------------------
+// aes_bus_clearance()
+//
+// This test case tests if changes on the data and round buses during hashing
+// do not influence the result.
+//----------------------------------------------------------------
+task aes_bus_clearance(
+    input [7 : 0]       tc_number,
+    input [511 : 0]     key,
+    input [127 : 0]     iv,
+    input [127 : 0]     block,
+    input [127 : 0]     expected
+);
+begin
+    $display("*** TC %0d bus clearance test case started.", tc_number);
+    tc_ctr = tc_ctr + 1;
+
+
+    tb_ce     = 1;
+    // tb_oe     = 0;
+    tb_init   = 1;
+    tb_block  = block;
+    tb_iv     = iv;
+    tb_key    = key;
+  
+
+    // Wait a cycle, then change the data and rounds buses.
+    #(CLK_PERIOD);
+    tb_init     = 0;
+    tb_block    = {4{32'hdeadbeef}};
+    tb_iv       = {4{32'hdeadbeef}};
+    tb_key      = {16{32'hdeadbeef}};
+
+    // Wait for the job to finish
+    wait_ready();
+    // tb_oe = 1;
+    #(CLK_PERIOD);
+
+
+
+    if (tb_result == expected) begin
+        $display("*** TC %0d successful.", tc_number);
+        $display("");
+    end else begin
+        $display("*** ERROR: TC %0d NOT successful.", tc_number);
+        $display("Expected: 0x%016x", expected);
+        $display("Got:      0x%016x", tb_result);
+        $display("");
+
+        error_ctr = error_ctr + 1;
+    end
+    
+
+
+end
+endtask
 
 //----------------------------------------------------------------
 // aes_256_cbc_test
@@ -394,6 +452,12 @@ initial
     aes_ce_test(8'd1, 1'b1, 1'b0);
 
     reset_dut();
+
+    $display("");
+    $display("Bus clearance tests");
+    $display("---------------------");
+    aes_bus_clearance(8'h1, aes256_key0, aes256_iv0, ciphertext0, cbc_256_dec_expected0);
+
 
     $display("");
     $display("CBC 256 bit key tests");

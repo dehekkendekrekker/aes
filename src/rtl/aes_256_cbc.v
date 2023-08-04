@@ -74,6 +74,18 @@ reg         result_valid_reg;
 reg         result_valid_new;
 reg         result_valid_we;
 
+reg [511 : 0]   key_reg;
+reg [511 : 0]   key_new;
+reg             key_we;
+
+reg [127 : 0]   iv_reg;
+reg [127 : 0]   iv_new;
+reg             iv_we;
+
+reg [127 : 0]   block_reg;
+reg [127 : 0]   block_new;
+reg             block_we;
+
 reg [127 : 0] result_reg;
 reg [127 : 0] result_new;
 reg           result_we;
@@ -100,6 +112,10 @@ wire            core_ready;
 wire [127 : 0]  core_result;
 wire            core_result_valid;
 
+wire [127 : 0 ] core_iv;
+wire [127 : 0 ] core_block;
+wire [511 : 0 ] core_key;
+
 
 //----------------------------------------------------------------
 // Concurrent connectivity for ports etc.
@@ -109,6 +125,10 @@ assign result       = result_reg;
 assign result_valid = result_valid_reg;
 assign core_init = core_init_reg;
 assign core_next = core_next_reg;
+
+assign core_block = block_reg;
+assign core_key   = key_reg;
+assign core_iv    = iv_reg;
 
 
 
@@ -121,8 +141,8 @@ aes_core aes_core_inst(
     .init(core_init),
     .next(core_next),
     .ready(core_ready),
-    .key(key),
-    .block(block),
+    .key(core_key),
+    .block(core_block),
     .result(core_result),
     .result_valid(core_result_valid)
 );
@@ -165,6 +185,15 @@ begin: reg_update
 
         if (result_we)
             result_reg <= result_new;
+
+        if (key_we)
+            key_reg <= key_new;
+
+        if (iv_we)
+            iv_reg <= iv_new;
+
+        if (block_we)
+            block_reg <= block_new;
     end
 end // reg_update
 
@@ -189,6 +218,15 @@ always @* begin : main_fsm
     core_next_new = 1'b0;
     core_next_we = 1'b0;
 
+    block_new = 0;
+    block_we  = 0;
+
+    key_new = 0;
+    key_we  = 0;
+
+    iv_new  =   0;
+    iv_we   =   0;
+
     module_ctrl_new = CTRL_IDLE;
     module_ctrl_we  = 1'b0;
     
@@ -204,6 +242,15 @@ always @* begin : main_fsm
             core_init_we      = 1'b1;
             module_ctrl_new   = CTRL_INIT;
             module_ctrl_we    = 1'b1;
+
+            key_new     = key;
+            key_we      = 1;
+            iv_new      = iv;
+            iv_we       = 1;
+            block_new   = block;
+            block_we    = 1;
+
+            
         end
     end
 
@@ -237,7 +284,7 @@ always @* begin : main_fsm
     end
 
     CTRL_DONE: begin
-        result_new = core_result ^ iv;
+        result_new = core_result ^ core_iv;
         result_we   = 1'b1;
         module_ctrl_new   = CTRL_IDLE;
         module_ctrl_we    = 1'b1;
